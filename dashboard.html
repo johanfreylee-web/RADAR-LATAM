@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Radar de Acciones LatAm</title>
+<style>
+  :root {
+    --bg: #0f1115;
+    --card: #171a21;
+    --border: #262b36;
+    --text: #e6e8eb;
+    --muted: #8b93a3;
+    --green: #34d399;
+    --red: #f87171;
+    --accent: #60a5fa;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    padding: 20px;
+  }
+  .container { max-width: 900px; margin: 0 auto; }
+  h1 { font-size: 22px; margin-bottom: 4px; }
+  .subtitle { color: var(--muted); font-size: 13px; margin-bottom: 24px; }
+  .config {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 10px; padding: 14px; margin-bottom: 20px; font-size: 13px;
+  }
+  .config input {
+    width: 100%; padding: 8px; margin-top: 6px; border-radius: 6px;
+    border: 1px solid var(--border); background: #0f1115; color: var(--text);
+  }
+  .badge {
+    display: inline-block; padding: 3px 8px; border-radius: 20px;
+    font-size: 11px; font-weight: 600;
+  }
+  .badge.sana { background: rgba(52,211,153,0.15); color: var(--green); }
+  .card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 12px; padding: 16px; margin-bottom: 14px;
+    display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;
+  }
+  .rank {
+    font-size: 24px; font-weight: 700; color: var(--accent);
+    min-width: 34px;
+  }
+  .info { flex: 1; min-width: 180px; }
+  .ticker { font-weight: 700; font-size: 16px; }
+  .name { color: var(--muted); font-size: 13px; }
+  .metrics { display: flex; gap: 18px; flex-wrap: wrap; font-size: 12px; }
+  .metric-label { color: var(--muted); }
+  .upside { font-size: 18px; font-weight: 700; color: var(--green); text-align: right; min-width: 80px; }
+  .loading, .error { text-align: center; color: var(--muted); padding: 40px 0; }
+  .updated { text-align: center; color: var(--muted); font-size: 12px; margin-top: 20px; }
+  table { width: 100%; border-collapse: collapse; margin-top: 30px; font-size: 12px; }
+  th, td { text-align: left; padding: 8px; border-bottom: 1px solid var(--border); }
+  th { color: var(--muted); font-weight: 600; }
+  button {
+    background: var(--accent); color: #0f1115; border: none; padding: 8px 14px;
+    border-radius: 6px; font-weight: 600; cursor: pointer; margin-top: 8px;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>📊 Radar de Acciones LatAm</h1>
+  <div class="subtitle">Top 5 semanal · Valoración + Deuda + DCF</div>
+
+  <div class="config">
+    URL del results.json (raw.githubusercontent.com de tu repo):
+    <input id="dataUrl" placeholder="https://raw.githubusercontent.com/TU_USUARIO/latam-radar/main/data/results.json">
+    <button onclick="load()">Cargar</button>
+  </div>
+
+  <div id="content" class="loading">Configura la URL arriba y presiona "Cargar".</div>
+</div>
+
+<script>
+  const saved = localStorage_fallback();
+  function localStorage_fallback() {
+    try { return window.localStorage.getItem('radarUrl'); } catch(e) { return null; }
+  }
+
+  async function load() {
+    const url = document.getElementById('dataUrl').value.trim();
+    const content = document.getElementById('content');
+    if (!url) return;
+    content.innerHTML = '<div class="loading">Cargando datos...</div>';
+    try {
+      const res = await fetch(url + '?t=' + Date.now());
+      if (!res.ok) throw new Error('No se pudo cargar (' + res.status + ')');
+      const data = await res.json();
+      render(data);
+    } catch (e) {
+      content.innerHTML = '<div class="error">Error: ' + e.message + '<br><br>Verifica que la URL apunte al archivo results.json en tu repo (rama main).</div>';
+    }
+  }
+
+  function render(data) {
+    const content = document.getElementById('content');
+    if (!data.top5 || data.top5.length === 0) {
+      content.innerHTML = '<div class="error">Aún no hay suficientes datos acumulados. El radar se actualiza automáticamente cada día — vuelve a intentarlo en unos días.</div>';
+      return;
+    }
+    let html = '';
+    data.top5.forEach((e, i) => {
+      html += `
+      <div class="card">
+        <div class="rank">#${i+1}</div>
+        <div class="info">
+          <div class="ticker">${e.ticker} <span class="badge sana">Deuda sana</span></div>
+          <div class="name">${e.name} · ${e.pais} · ${e.sector}</div>
+          <div class="metrics">
+            <div><span class="metric-label">Precio:</span> $${e.precio ?? 'N/D'}</div>
+            <div><span class="metric-label">P/E:</span> ${e.pe_ratio ?? 'N/D'}</div>
+            <div><span class="metric-label">P/B:</span> ${e.pb_ratio ?? 'N/D'}</div>
+            <div><span class="metric-label">Deuda/Patrim:</span> ${e.debt_to_equity ? e.debt_to_equity.toFixed(2) : 'N/D'}</div>
+            <div><span class="metric-label">Valor DCF:</span> $${e.valor_intrinseco_dcf ?? 'N/D'}</div>
+          </div>
+        </div>
+        <div class="upside">+${e.upside_dcf_pct}%<br><span style="font-size:10px;color:var(--muted);font-weight:400">upside DCF</span></div>
+      </div>`;
+    });
+
+    html += `<div class="updated">Última actualización: ${data.generado}</div>`;
+
+    if (data.universo_completo) {
+      html += '<table><tr><th>Ticker</th><th>País</th><th>P/E</th><th>P/B</th><th>EV/EBITDA</th><th>Deuda/Patrim</th><th>Upside DCF</th></tr>';
+      data.universo_completo
+        .slice()
+        .sort((a,b) => (b.upside_dcf_pct ?? -999) - (a.upside_dcf_pct ?? -999))
+        .forEach(e => {
+          html += `<tr>
+            <td>${e.ticker}</td><td>${e.pais}</td>
+            <td>${e.pe_ratio ?? '-'}</td><td>${e.pb_ratio ?? '-'}</td>
+            <td>${e.ev_ebitda ?? '-'}</td>
+            <td>${e.debt_to_equity ? e.debt_to_equity.toFixed(2) : '-'}</td>
+            <td>${e.upside_dcf_pct !== null && e.upside_dcf_pct !== undefined ? e.upside_dcf_pct + '%' : '-'}</td>
+          </tr>`;
+        });
+      html += '</table>';
+    }
+
+    content.innerHTML = html;
+  }
+
+  if (saved) {
+    document.getElementById('dataUrl').value = saved;
+  }
+</script>
+</body>
+</html>
