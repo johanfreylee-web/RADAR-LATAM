@@ -61,7 +61,7 @@ UNIVERSE = [
     {"ticker": "AVAL", "name": "Grupo Aval", "pais": "Colombia", "sector": "Banca"},
 ]
 
-TICKERS_PER_DAY = 5          # 5 tickers x 4 llamadas = 20 requests/día (límite: 25)
+TICKERS_PER_DAY = 4          # 4 tickers x 4 llamadas = 16 requests/día (límite: 25, deja margen)
 MAX_DEBT_TO_EQUITY = 1.5     # umbral de "deuda sana"
 DISCOUNT_RATE = 0.12         # tasa de descuento para el DCF (prima por riesgo EM)
 TERMINAL_GROWTH = 0.03
@@ -132,8 +132,10 @@ def compute_metrics(meta, balance, cashflow, income, quote):
     total_debt = None
     cash = 0.0
     debt_to_equity = None
+    balance_currency = None
     try:
         bs = balance["annualReports"][0]
+        balance_currency = bs.get("reportedCurrency")
         shares_out = safe_float(bs.get("commonStockSharesOutstanding"))
         equity = safe_float(bs.get("totalShareholderEquity"))
         total_debt = safe_float(bs.get("shortLongTermDebtTotal")) or 0
@@ -146,9 +148,11 @@ def compute_metrics(meta, balance, cashflow, income, quote):
     net_income = None
     ebitda = None
     rev_growth = None
+    income_currency = None
     try:
         reports = income["annualReports"]
         inc0 = reports[0]
+        income_currency = inc0.get("reportedCurrency")
         net_income = safe_float(inc0.get("netIncome"))
         ebitda = safe_float(inc0.get("ebitda"))
         rev0 = safe_float(inc0.get("totalRevenue"))
@@ -159,8 +163,18 @@ def compute_metrics(meta, balance, cashflow, income, quote):
     except (KeyError, IndexError, ZeroDivisionError, TypeError):
         pass
 
+    # Alpha Vantage reporta los estados financieros en la moneda local de
+    # cada empresa (ej: Bancolombia en COP), pero el precio del ADR viene
+    # en USD. Mezclar monedas sin convertir produce ratios sin sentido
+    # (P/E cercano a 0, DCF con upside de cientos de miles de %). Por
+    # seguridad, solo calculamos los múltiplos que combinan precio (USD)
+    # con datos financieros si esos datos ya vienen reportados en USD.
+    financials_in_usd = (
+        (balance_currency in (None, "USD")) and (income_currency in (None, "USD"))
+    )
+
     # --- Múltiplos de valoración (calculados a mano) ---
-    market_cap = (price * shares_out) if (price and shares_out) else None
+    market_cap = (price * shares_out) if (price and shares_out and financials_in_usd) else None
     pe = (market_cap / net_income) if (market_cap and net_income and net_income > 0) else None
     pb = (market_cap / equity) if (market_cap and equity and equity > 0) else None
     enterprise_value = (
@@ -169,11 +183,14 @@ def compute_metrics(meta, balance, cashflow, income, quote):
     ev_ebitda = (
         (enterprise_value / ebitda) if (enterprise_value and ebitda and ebitda > 0) else None
     )
+    # ROE y Deuda/Patrimonio son ratios dentro de la misma moneda local,
+    # así que siguen siendo válidos aunque no se reporte en USD.
     roe = (net_income / equity) if (net_income and equity and equity > 0) else None
 
-    # --- DCF simplificado ---
+    # --- DCF simplificado (requiere precio en USD vs. flujos en USD) ---
     intrinsic_value = None
     upside_pct = None
+    shares_out_for_dcf = shares_out if financials_in_usd else None
     try:
         cf = cashflow["annualReports"][0]
         op_cf = safe_float(cf.get("operatingCashflow"))
@@ -183,7 +200,7 @@ def compute_metrics(meta, balance, cashflow, income, quote):
         growth = rev_growth if rev_growth is not None else DEFAULT_GROWTH
         growth = max(0.0, min(growth, MAX_GROWTH))
 
-        if fcf and shares_out:
+        if fcf and shares_out_for_dcf:
             pv_sum = 0.0
             projected_fcf = fcf
             for year in range(1, PROJECTION_YEARS + 1):
@@ -194,7 +211,7 @@ def compute_metrics(meta, balance, cashflow, income, quote):
             )
             pv_terminal = terminal_value / ((1 + DISCOUNT_RATE) ** PROJECTION_YEARS)
             enterprise_value_dcf = pv_sum + pv_terminal
-            intrinsic_value = enterprise_value_dcf / shares_out
+            intrinsic_value = enterprise_value_dcf / shares_out_for_dcf
             if price:
                 upside_pct = ((intrinsic_value - price) / price) * 100
     except (KeyError, IndexError, ZeroDivisionError, TypeError):
@@ -210,6 +227,7 @@ def compute_metrics(meta, balance, cashflow, income, quote):
         "valor_intrinseco_dcf": round(intrinsic_value, 2) if intrinsic_value else None,
         "upside_dcf_pct": round(upside_pct, 1) if upside_pct is not None else None,
         "deuda_sana": (debt_to_equity is not None and debt_to_equity <= MAX_DEBT_TO_EQUITY),
+        "moneda_reportada": income_currency or balance_currency,
     })
     return result
 
