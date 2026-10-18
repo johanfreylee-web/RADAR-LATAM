@@ -1,5 +1,5 @@
 {
-  "generado": "2026-10-17",
+  "generado": "2026-10-18",
   "top5": [],
   "universo_completo": [
     {
@@ -81,6 +81,86 @@
       "valor_intrinseco_dcf": null,
       "upside_dcf_pct": null,
       "deuda_sana": false
+    },
+    {
+      "ticker": "CCU",
+      "name": "CCU",
+      "pais": "Chile",
+      "sector": "Consumo",
+      "actualizado": "2026-10-18",
+      "precio": 10.89,
+      "pe_ratio": null,
+      "pb_ratio": null,
+      "ev_ebitda": null,
+      "roe": null,
+      "debt_to_equity": 0.8993456449644545,
+      "valor_intrinseco_dcf": null,
+      "upside_dcf_pct": null,
+      "deuda_sana": true
+    },
+    {
+      "ticker": "BAP",
+      "name": "Credicorp",
+      "pais": "Per\u00fa",
+      "sector": "Banca",
+      "actualizado": "2026-10-18",
+      "precio": 390.26,
+      "pe_ratio": null,
+      "pb_ratio": null,
+      "ev_ebitda": null,
+      "roe": null,
+      "debt_to_equity": 0.9434770133414256,
+      "valor_intrinseco_dcf": null,
+      "upside_dcf_pct": null,
+      "deuda_sana": true
+    },
+    {
+      "ticker": "BVN",
+      "name": "Buenaventura",
+      "pais": "Per\u00fa",
+      "sector": "Miner\u00eda",
+      "actualizado": "2026-10-18",
+      "precio": 30.42,
+      "pe_ratio": null,
+      "pb_ratio": null,
+      "ev_ebitda": null,
+      "roe": null,
+      "debt_to_equity": 0.17471349528928717,
+      "valor_intrinseco_dcf": null,
+      "upside_dcf_pct": null,
+      "deuda_sana": true
+    },
+    {
+      "ticker": "SCCO",
+      "name": "Southern Copper",
+      "pais": "Per\u00fa/M\u00e9xico",
+      "sector": "Miner\u00eda",
+      "actualizado": "2026-10-18",
+      "precio": 200.51,
+      "pe_ratio": null,
+      "pb_ratio": null,
+      "ev_ebitda": null,
+      "roe": null,
+      "debt_to_equity": 0.6716282693579511,
+      "valor_intrinseco_dcf": null,
+      "upside_dcf_pct": null,
+      "deuda_sana": true
+    },
+    {
+      "ticker": "CIB",
+      "name": "Bancolombia",
+      "pais": "Colombia",
+      "sector": "Banca",
+      "actualizado": "2026-10-18",
+      "precio": 97.91,
+      "pe_ratio": null,
+      "pb_ratio": null,
+      "ev_ebitda": null,
+      "roe": null,
+      "debt_to_equity": 0.48751009717760374,
+      "valor_intrinseco_dcf": null,
+      "upside_dcf_pct": null,
+      "deuda_sana": true
     }
   ]
 }
