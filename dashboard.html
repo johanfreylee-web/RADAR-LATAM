@@ -80,10 +80,16 @@
 </div>
 
 <script>
-  const saved = localStorage_fallback();
-  function localStorage_fallback() {
+  // URL por defecto: apunta al results.json de este mismo repo.
+  const DEFAULT_DATA_URL = 'https://raw.githubusercontent.com/johanfreylee-web/RADAR-LATAM/main/data/results.json';
+
+  function savedUrl() {
     try { return window.localStorage.getItem('radarUrl'); } catch(e) { return null; }
   }
+  function rememberUrl(url) {
+    try { window.localStorage.setItem('radarUrl', url); } catch(e) {}
+  }
+  const saved = savedUrl() || DEFAULT_DATA_URL;
 
   async function load() {
     const url = document.getElementById('dataUrl').value.trim();
@@ -95,6 +101,7 @@
       if (!res.ok) throw new Error('No se pudo cargar (' + res.status + ')');
       const data = await res.json();
       render(data);
+      rememberUrl(url);
     } catch (e) {
       content.innerHTML = '<div class="error">Error: ' + e.message + '<br><br>Verifica que la URL apunte al archivo results.json en tu repo (rama main).</div>';
     }
@@ -148,9 +155,8 @@
     content.innerHTML = html;
   }
 
-  if (saved) {
-    document.getElementById('dataUrl').value = saved;
-  }
+  document.getElementById('dataUrl').value = saved;
+  load();
 </script>
 </body>
 </html>
