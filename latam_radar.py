@@ -84,7 +84,7 @@ def load_cache():
 def save_cache(cache):
     os.makedirs(os.path.dirname(CACHE_PATH), exist_ok=True)
     with open(CACHE_PATH, "w") as f:
-        json.dump(cache, f, indent=2)
+        json.dump(cache, f, indent=2, ensure_ascii=False)
 
 
 def av_call(function, symbol):
@@ -104,37 +104,72 @@ def safe_float(value, default=None):
 
 
 def fetch_ticker_data(symbol):
-    """Trae Overview, Balance Sheet, Cash Flow y Quote para un ticker."""
-    overview = av_call("OVERVIEW", symbol)
-    time.sleep(13)  # respeta 5 req/min
+    """Trae Balance Sheet, Cash Flow, Income Statement y Quote para un ticker.
+
+    Nota: el endpoint OVERVIEW pasó a ser "premium" en Alpha Vantage (ya no
+    gratuito), así que todos los múltiplos se calculan a mano a partir de
+    los 3 estados financieros + la cotización, que sí son gratuitos.
+    """
     balance = av_call("BALANCE_SHEET", symbol)
-    time.sleep(13)
+    time.sleep(13)  # respeta 5 req/min
     cashflow = av_call("CASH_FLOW", symbol)
+    time.sleep(13)
+    income = av_call("INCOME_STATEMENT", symbol)
     time.sleep(13)
     quote = av_call("GLOBAL_QUOTE", symbol)
     time.sleep(13)
-    return overview, balance, cashflow, quote
+    return balance, cashflow, income, quote
 
 
-def compute_metrics(meta, overview, balance, cashflow, quote):
+def compute_metrics(meta, balance, cashflow, income, quote):
     result = {**meta, "actualizado": datetime.date.today().isoformat()}
 
     price = safe_float((quote.get("Global Quote") or {}).get("05. price"))
-    shares_out = safe_float(overview.get("SharesOutstanding"))
-    pe = safe_float(overview.get("PERatio"))
-    pb = safe_float(overview.get("PriceToBookRatio"))
-    ev_ebitda = safe_float(overview.get("EVToEBITDA"))
-    roe = safe_float(overview.get("ReturnOnEquityTTM"))
-    rev_growth = safe_float(overview.get("QuarterlyRevenueGrowthYOY"))
 
-    # --- Deuda ---
+    # --- Balance (deuda, patrimonio, acciones en circulación, caja) ---
+    shares_out = None
+    equity = None
+    total_debt = None
+    cash = 0.0
+    debt_to_equity = None
     try:
         bs = balance["annualReports"][0]
-        total_debt = safe_float(bs.get("shortLongTermDebtTotal")) or 0
+        shares_out = safe_float(bs.get("commonStockSharesOutstanding"))
         equity = safe_float(bs.get("totalShareholderEquity"))
+        total_debt = safe_float(bs.get("shortLongTermDebtTotal")) or 0
+        cash = safe_float(bs.get("cashAndCashEquivalentsAtCarryingValue")) or 0
         debt_to_equity = (total_debt / equity) if equity else None
-    except (KeyError, IndexError, ZeroDivisionError):
-        debt_to_equity = None
+    except (KeyError, IndexError, ZeroDivisionError, TypeError):
+        pass
+
+    # --- Income statement (ingresos, EBITDA, utilidad neta, crecimiento) ---
+    net_income = None
+    ebitda = None
+    rev_growth = None
+    try:
+        reports = income["annualReports"]
+        inc0 = reports[0]
+        net_income = safe_float(inc0.get("netIncome"))
+        ebitda = safe_float(inc0.get("ebitda"))
+        rev0 = safe_float(inc0.get("totalRevenue"))
+        if len(reports) > 1:
+            rev1 = safe_float(reports[1].get("totalRevenue"))
+            if rev0 and rev1:
+                rev_growth = (rev0 - rev1) / rev1
+    except (KeyError, IndexError, ZeroDivisionError, TypeError):
+        pass
+
+    # --- Múltiplos de valoración (calculados a mano) ---
+    market_cap = (price * shares_out) if (price and shares_out) else None
+    pe = (market_cap / net_income) if (market_cap and net_income and net_income > 0) else None
+    pb = (market_cap / equity) if (market_cap and equity and equity > 0) else None
+    enterprise_value = (
+        (market_cap + (total_debt or 0) - cash) if market_cap is not None else None
+    )
+    ev_ebitda = (
+        (enterprise_value / ebitda) if (enterprise_value and ebitda and ebitda > 0) else None
+    )
+    roe = (net_income / equity) if (net_income and equity and equity > 0) else None
 
     # --- DCF simplificado ---
     intrinsic_value = None
@@ -158,8 +193,8 @@ def compute_metrics(meta, overview, balance, cashflow, quote):
                 DISCOUNT_RATE - TERMINAL_GROWTH
             )
             pv_terminal = terminal_value / ((1 + DISCOUNT_RATE) ** PROJECTION_YEARS)
-            enterprise_value = pv_sum + pv_terminal
-            intrinsic_value = enterprise_value / shares_out
+            enterprise_value_dcf = pv_sum + pv_terminal
+            intrinsic_value = enterprise_value_dcf / shares_out
             if price:
                 upside_pct = ((intrinsic_value - price) / price) * 100
     except (KeyError, IndexError, ZeroDivisionError, TypeError):
@@ -167,10 +202,10 @@ def compute_metrics(meta, overview, balance, cashflow, quote):
 
     result.update({
         "precio": price,
-        "pe_ratio": pe,
-        "pb_ratio": pb,
-        "ev_ebitda": ev_ebitda,
-        "roe": roe,
+        "pe_ratio": round(pe, 2) if pe is not None else None,
+        "pb_ratio": round(pb, 2) if pb is not None else None,
+        "ev_ebitda": round(ev_ebitda, 2) if ev_ebitda is not None else None,
+        "roe": round(roe, 4) if roe is not None else None,
         "debt_to_equity": debt_to_equity,
         "valor_intrinseco_dcf": round(intrinsic_value, 2) if intrinsic_value else None,
         "upside_dcf_pct": round(upside_pct, 1) if upside_pct is not None else None,
@@ -278,8 +313,8 @@ def main():
         symbol = meta["ticker"]
         print(f"Actualizando {symbol}...")
         try:
-            overview, balance, cashflow, quote = fetch_ticker_data(symbol)
-            cache[symbol] = compute_metrics(meta, overview, balance, cashflow, quote)
+            balance, cashflow, income, quote = fetch_ticker_data(symbol)
+            cache[symbol] = compute_metrics(meta, balance, cashflow, income, quote)
         except Exception as exc:
             print(f"Error con {symbol}: {exc}")
 
@@ -292,7 +327,7 @@ def main():
             "generado": datetime.date.today().isoformat(),
             "top5": top5,
             "universo_completo": list(cache.values()),
-        }, f, indent=2)
+        }, f, indent=2, ensure_ascii=False)
 
     # Enviar email solo los lunes (o si se fuerza vía variable de entorno)
     is_monday = datetime.date.today().weekday() == 0
