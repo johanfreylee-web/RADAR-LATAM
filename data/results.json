@@ -1,5 +1,5 @@
 {
-  "generado": "2026-10-19",
+  "generado": "2026-10-20",
   "top5": [
     {
       "ticker": "BAP",
@@ -87,6 +87,74 @@
       "upside_dcf_pct": null,
       "deuda_sana": true,
       "moneda_reportada": "COP"
+    },
+    {
+      "ticker": "EC",
+      "name": "Ecopetrol",
+      "pais": "Colombia",
+      "sector": "Energía",
+      "actualizado": "2026-10-20",
+      "precio": 17.77,
+      "pe_ratio": null,
+      "pb_ratio": null,
+      "ev_ebitda": null,
+      "roe": 0.1003,
+      "debt_to_equity": 1.3037249283739536,
+      "valor_intrinseco_dcf": null,
+      "upside_dcf_pct": null,
+      "deuda_sana": true,
+      "moneda_reportada": "COP"
+    },
+    {
+      "ticker": "AVAL",
+      "name": "Grupo Aval",
+      "pais": "Colombia",
+      "sector": "Banca",
+      "actualizado": "2026-10-20",
+      "precio": 4.71,
+      "pe_ratio": null,
+      "pb_ratio": null,
+      "ev_ebitda": null,
+      "roe": 0.087,
+      "debt_to_equity": 3.7228652442125663,
+      "valor_intrinseco_dcf": null,
+      "upside_dcf_pct": null,
+      "deuda_sana": false,
+      "moneda_reportada": "COP"
+    },
+    {
+      "ticker": "VALE",
+      "name": "Vale S.A.",
+      "pais": "Brasil",
+      "sector": "Minería",
+      "actualizado": "2026-10-20",
+      "precio": 13.11,
+      "pe_ratio": null,
+      "pb_ratio": null,
+      "ev_ebitda": null,
+      "roe": 0.0735,
+      "debt_to_equity": 0.5765142410792056,
+      "valor_intrinseco_dcf": null,
+      "upside_dcf_pct": null,
+      "deuda_sana": true,
+      "moneda_reportada": "USD"
+    },
+    {
+      "ticker": "PBR",
+      "name": "Petrobras",
+      "pais": "Brasil",
+      "sector": "Energía",
+      "actualizado": "2026-10-20",
+      "precio": 25.56,
+      "pe_ratio": null,
+      "pb_ratio": null,
+      "ev_ebitda": null,
+      "roe": 0.2598,
+      "debt_to_equity": 0.923612148873321,
+      "valor_intrinseco_dcf": null,
+      "upside_dcf_pct": null,
+      "deuda_sana": true,
+      "moneda_reportada": "USD"
     }
   ]
 }
