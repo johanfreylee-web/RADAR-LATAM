@@ -1,5 +1,5 @@
 {
-  "generado": "2026-10-20",
+  "generado": "2026-10-21",
   "top5": [
     {
       "ticker": "BAP",
@@ -155,6 +155,74 @@
       "upside_dcf_pct": null,
       "deuda_sana": true,
       "moneda_reportada": "USD"
+    },
+    {
+      "ticker": "ITUB",
+      "name": "Itaú Unibanco",
+      "pais": "Brasil",
+      "sector": "Banca",
+      "actualizado": "2026-10-21",
+      "precio": 9.7,
+      "pe_ratio": null,
+      "pb_ratio": null,
+      "ev_ebitda": null,
+      "roe": 0.2195,
+      "debt_to_equity": 4.954049115420547,
+      "valor_intrinseco_dcf": null,
+      "upside_dcf_pct": null,
+      "deuda_sana": false,
+      "moneda_reportada": "BRL"
+    },
+    {
+      "ticker": "BBD",
+      "name": "Bradesco",
+      "pais": "Brasil",
+      "sector": "Banca",
+      "actualizado": "2026-10-21",
+      "precio": 4.08,
+      "pe_ratio": 1.82,
+      "pb_ratio": 0.24,
+      "ev_ebitda": 24.44,
+      "roe": 0.1327,
+      "debt_to_equity": 4.449389693934797,
+      "valor_intrinseco_dcf": 342.22,
+      "upside_dcf_pct": 8287.8,
+      "deuda_sana": false,
+      "moneda_reportada": "USD"
+    },
+    {
+      "ticker": "ABEV",
+      "name": "Ambev",
+      "pais": "Brasil",
+      "sector": "Consumo",
+      "actualizado": "2026-10-21",
+      "precio": 3.32,
+      "pe_ratio": null,
+      "pb_ratio": null,
+      "ev_ebitda": null,
+      "roe": 0.1763,
+      "debt_to_equity": 0.06085019026369611,
+      "valor_intrinseco_dcf": null,
+      "upside_dcf_pct": null,
+      "deuda_sana": true,
+      "moneda_reportada": "BRL"
+    },
+    {
+      "ticker": "SUZ",
+      "name": "Suzano",
+      "pais": "Brasil",
+      "sector": "Materiales",
+      "actualizado": "2026-10-21",
+      "precio": 8.45,
+      "pe_ratio": null,
+      "pb_ratio": null,
+      "ev_ebitda": null,
+      "roe": 0.3002,
+      "debt_to_equity": 2.4257665061781832,
+      "valor_intrinseco_dcf": null,
+      "upside_dcf_pct": null,
+      "deuda_sana": false,
+      "moneda_reportada": "BRL"
     }
   ]
 }
