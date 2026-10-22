@@ -1,5 +1,5 @@
 {
-  "generado": "2026-10-21",
+  "generado": "2026-10-22",
   "top5": [
     {
       "ticker": "BAP",
@@ -223,6 +223,74 @@
       "upside_dcf_pct": null,
       "deuda_sana": false,
       "moneda_reportada": "BRL"
+    },
+    {
+      "ticker": "GGB",
+      "name": "Gerdau",
+      "pais": "Brasil",
+      "sector": "Materiales",
+      "actualizado": "2026-10-22",
+      "precio": 5.24,
+      "pe_ratio": null,
+      "pb_ratio": null,
+      "ev_ebitda": null,
+      "roe": 0.0259,
+      "debt_to_equity": 0.29058874309273053,
+      "valor_intrinseco_dcf": null,
+      "upside_dcf_pct": null,
+      "deuda_sana": true,
+      "moneda_reportada": "BRL"
+    },
+    {
+      "ticker": "ERJ",
+      "name": "Embraer",
+      "pais": "Brasil",
+      "sector": "Industrial",
+      "actualizado": "2026-10-22",
+      "precio": null,
+      "pe_ratio": null,
+      "pb_ratio": null,
+      "ev_ebitda": null,
+      "roe": null,
+      "debt_to_equity": null,
+      "valor_intrinseco_dcf": null,
+      "upside_dcf_pct": null,
+      "deuda_sana": false,
+      "moneda_reportada": null
+    },
+    {
+      "ticker": "BSBR",
+      "name": "Santander Brasil",
+      "pais": "Brasil",
+      "sector": "Banca",
+      "actualizado": "2026-10-22",
+      "precio": 5.67,
+      "pe_ratio": null,
+      "pb_ratio": null,
+      "ev_ebitda": null,
+      "roe": 0.102,
+      "debt_to_equity": 1.0382036841175606,
+      "valor_intrinseco_dcf": null,
+      "upside_dcf_pct": null,
+      "deuda_sana": true,
+      "moneda_reportada": "BRL"
+    },
+    {
+      "ticker": "AMX",
+      "name": "América Móvil",
+      "pais": "México",
+      "sector": "Telecom",
+      "actualizado": "2026-10-22",
+      "precio": 24.29,
+      "pe_ratio": null,
+      "pb_ratio": null,
+      "ev_ebitda": null,
+      "roe": 0.2142,
+      "debt_to_equity": 2.533370207141915,
+      "valor_intrinseco_dcf": null,
+      "upside_dcf_pct": null,
+      "deuda_sana": false,
+      "moneda_reportada": "MXN"
     }
   ]
 }
